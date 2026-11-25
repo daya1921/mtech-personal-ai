@@ -123,7 +123,8 @@ private fun AssistantHome(
             Text(status, fontWeight = FontWeight.Medium)
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                "Text requests use a development placeholder until a model provider is connected.",
+                "Without an OpenRouter key this app uses a placeholder. With a key, messages " +
+                    "are sent to OpenRouter for an AI response.",
                 style = MaterialTheme.typography.bodySmall,
             )
         }

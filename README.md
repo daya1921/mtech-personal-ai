@@ -6,7 +6,7 @@ A lightweight research prototype for a context-aware Android assistant. The agre
 
 - FastAPI backend with Pydantic settings loaded from `.env`, `GET /health`, and `POST /api/v1/assistant/message`.
 - Android Kotlin/Jetpack Compose shell with a health check and a text box that sends a request to the backend.
-- The message endpoint currently returns an explicit development placeholder. It does not call an AI model yet.
+- The message endpoint returns an explicit placeholder unless an OpenRouter API key is configured. With a key, it sends the text to the configured model and returns its reply.
 - Emulator default API URL: `http://10.0.2.2:8000`.
 - No model keys, personal documents, or real device actions are needed for this milestone.
 
@@ -38,7 +38,20 @@ Invoke-RestMethod http://127.0.0.1:8000/health
 
 Expected fields are `status`, `service`, and `version`. Interactive API docs are at `http://127.0.0.1:8000/docs`.
 
-The text endpoint accepts a non-empty message up to 4,000 characters and returns a placeholder response until model integration is added:
+The text endpoint accepts a non-empty message up to 4,000 characters. Without a provider key, it returns a placeholder with `mode: "placeholder"` so the app never presents an acknowledgement as an AI reply.
+
+## Optional AI provider
+
+OpenRouter integration is optional and defaults to its free-model router (`openrouter/free`). Free-model availability and usage limits can change. A key is required, and each configured message is sent from your backend to OpenRouter. Keep the key only in the ignored local `.env` file; never paste it into GitHub or the Android app.
+
+1. Create an API key in your OpenRouter account.
+2. In the repository root, open `.env` and set `MTECH_OPENROUTER_API_KEY` to that key. `MTECH_OPENROUTER_MODEL=openrouter/free` is already the example default; you can change it to another model ID if desired.
+3. Stop the running backend with `Ctrl+C`, then start it again using the command above so it reads the updated settings.
+4. Send a short test message from the app. The response mode should be `openrouter`. If the key is absent, the endpoint continues to return the placeholder.
+
+The backend limits provider waiting time to 35 seconds. The Android app waits up to 45 seconds for a text response. Provider errors are returned without exposing credentials or raw provider response bodies.
+
+To check the placeholder path without sending anything to OpenRouter, leave `MTECH_OPENROUTER_API_KEY` empty and call the endpoint from PowerShell:
 
 ```powershell
 $body = @{ message = "Hello from MTech" } | ConvertTo-Json
@@ -46,7 +59,7 @@ Invoke-RestMethod -Uri http://127.0.0.1:8000/api/v1/assistant/message `
   -Method Post -ContentType "application/json" -Body $body
 ```
 
-The response includes `mode: "placeholder"` so the app does not present this acknowledgement as an AI-generated answer.
+The response should include `mode: "placeholder"`.
 
 ## Android setup
 

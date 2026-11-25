@@ -43,7 +43,7 @@ object BackendApi {
         return try {
             connection.requestMethod = "POST"
             connection.connectTimeout = 5_000
-            connection.readTimeout = 5_000
+            connection.readTimeout = 45_000
             connection.doOutput = true
             connection.setRequestProperty("Content-Type", "application/json; charset=utf-8")
 

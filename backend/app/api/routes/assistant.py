@@ -1,7 +1,10 @@
 from typing import Literal
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field, field_validator
+
+from app.core.config import get_settings
+from app.services.openrouter import OpenRouterError, generate_reply
 
 
 class AssistantMessageRequest(BaseModel):
@@ -17,7 +20,7 @@ class AssistantMessageRequest(BaseModel):
 
 
 class AssistantMessageResponse(BaseModel):
-    mode: Literal["placeholder"] = "placeholder"
+    mode: Literal["placeholder", "openrouter"]
     reply: str
 
 
@@ -26,10 +29,21 @@ router = APIRouter(prefix="/api/v1/assistant", tags=["assistant"])
 
 @router.post("/message", response_model=AssistantMessageResponse)
 def receive_message(request: AssistantMessageRequest) -> AssistantMessageResponse:
-    """Confirm the client-to-backend text path before model integration."""
+    """Use OpenRouter when configured; otherwise keep the explicit placeholder."""
+    settings = get_settings()
+    api_key = settings.openrouter_api_key
+
+    if api_key is not None and api_key.get_secret_value().strip():
+        try:
+            reply = generate_reply(request.message, settings)
+        except OpenRouterError as error:
+            raise HTTPException(status_code=502, detail=str(error)) from error
+        return AssistantMessageResponse(mode="openrouter", reply=reply)
+
     return AssistantMessageResponse(
+        mode="placeholder",
         reply=(
             "Your message reached the MTech backend. AI responses will be added "
-            "when a model provider is connected."
+            "when an OpenRouter API key is configured."
         )
     )
