@@ -1,0 +1,31 @@
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+coverage/
+
+# Local configuration and credentials
+.env
+.env.*
+!.env.example
+local.properties
+*.jks
+*.keystore
+
+# Android / Gradle generated files
+.gradle/
+**/build/
+.idea/
+*.iml
+
+# Temporary files and logs
+*.log
+.DS_Store
+Thumbs.db
+
+# Synced project reference files can be replaced between tasks
+/sources/
